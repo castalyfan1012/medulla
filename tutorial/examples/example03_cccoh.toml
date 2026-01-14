@@ -1,0 +1,91 @@
+[parameters]
+photon_threshold = 25.0
+electron_threshold = 25.0
+muon_threshold = 143.425
+pion_threshold = 25.0
+proton_threshold = 50.0
+
+[general]
+output = "example03_cccoh"
+primfn = "default_primary_classification"
+pidfn = "default_pid"
+fsthresh = [
+    "@photon_threshold",
+    "@electron_threshold",
+    "@muon_threshold",
+    "@pion_threshold",
+    "@proton_threshold",
+]
+
+# SBND sample
+[[sample]]
+name = "simulation"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input000-reweighted.flat.caf.root"
+ismc = true
+disable = false # Optional: default = false
+
+# ICARUS sample
+[[sample]]
+name = "simulation"
+path = "/pnfs/icarus/persistent/users/mueller/production/simulation/cvext/input000.flat.root"
+ismc = true
+disable = true # Optional: default = false
+
+[[tree]]
+name = "signal"
+sim_only = true
+mode = "true"
+cut = [
+    { name = "fiducial_cut",         type = "true"                           },
+    { name = "is_interaction_type",  type = "true",    parameters = [ 1097,] },
+]
+branch = [
+    { name = "neutrino_id",           type = "true"    },
+    { name = "neutrino_energy",       type = "mctruth" },
+    { name = "baseline",              type = "mctruth" },
+    { name = "cc",                    type = "mctruth" },
+    { name = "pdg",                   type = "mctruth" },
+    { name = "category",              type = "true"    },
+    { name = "visible_energy",        type = "both"    },
+]
+
+[[category]] # 0 : Fiducial, contained, coherent pion production
+cuts = [
+    { name = "neutrino"                                      },
+    { name = "fiducial_cut"                                  },
+    { name = "containment_cut"                               },
+    { name = "is_interaction_type",   parameters = [ 1097, ] },
+]
+
+[[category]] # 1 : Fiducial, non-contained, coherent pion production
+cuts = [
+    { name = "neutrino"                                      },
+    { name = "fiducial_cut"                                  },
+    { name = "!containment_cut"                              },
+    { name = "is_interaction_type",   parameters = [ 1097, ] },
+]
+
+[[category]] # 4 : Fiducial, CC, non-signal
+cuts = [
+    { name = "neutrino"                                      },
+    { name = "fiducial_cut"                                  },
+    { name = "iscc"                                          },
+]
+
+[[category]] # 5 : Non-fiducial, CC, non-signal
+cuts = [
+    { name = "neutrino"                                      },
+    { name = "!fiducial_cut"                                 },
+    { name = "iscc"                                          },
+]
+
+[[category]] # 6 : NC
+cuts = [
+    { name = "neutrino"                                      },
+    { name = "!iscc"                                         },
+]
+
+[[category]] # 7 : Cosmic
+cuts = [
+    { name = "!neutrino"                                     },
+]

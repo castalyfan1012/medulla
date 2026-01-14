@@ -36,7 +36,7 @@ class Variable:
     """
     def __init__(self, name, key, range, nbins,
                  binning_scheme='equal_width', xlabel=None,
-                 mask=None) -> None:
+                 mask=None, custom_bins = None) -> None:
         """
         Initializes the Variable object with the given kwargs.
 
@@ -53,13 +53,18 @@ class Variable:
             The number of bins for the variable.
         binning_scheme : str
             The binning scheme for the variable. This can be either
-            'equal_width' or 'equal_population'. The default is
-            'equal_width,' which creates bins of equal width
+            'equal_width', 'custom_bins', or 'equal_population'. The 
+            default is 'equal_width,' which creates bins of equal width
             irrespective of the number of entries in each bin.
+            Option 'custom_bins' requires entering bin edges tuple for 
+            parameter custom_bins.
         xlabel : str
             The x-axis label for the variable.
         mask : string, optional
             A mask formula to apply to the variable. The default is None.
+        custom_bins : tuple
+            The customized bin edges (required if binning_scheme is
+            'custom_bins').
 
         Returns
         -------
@@ -72,6 +77,7 @@ class Variable:
         self._binning_scheme = binning_scheme
         self._xlabel = xlabel
         self._mask = mask
+        self._custom_bins = custom_bins
         self._validity_check = {}
         self._bin_edges = {}
         self._bin_centers = {}
@@ -120,6 +126,12 @@ class Variable:
                     all_entries = pd.concat(v)
                     range_mask = ((all_entries >= self._range[0]) & (all_entries <= self._range[1]))
                     self._bin_edges[g] = np.percentile(all_entries[range_mask], np.linspace(0, 100, self._nbins+1))
+                    self._bin_centers[g] = 0.5*(self._bin_edges[g][1:] + self._bin_edges[g][:-1])
+                    self._bin_widths[g] = self._bin_edges[g][1:] - self._bin_edges[g][:-1]
+                elif self._custom_bins is not None and self._binning_scheme == 'custom_bins':
+                    self._nbins = len(self._custom_bins) - 1
+                    self._range = (self._custom_bins[0], self._custom_bins[-1])
+                    self._bin_edges[g] = np.array(self._custom_bins)
                     self._bin_centers[g] = 0.5*(self._bin_edges[g][1:] + self._bin_edges[g][:-1])
                     self._bin_widths[g] = self._bin_edges[g][1:] - self._bin_edges[g][:-1]
                 else:

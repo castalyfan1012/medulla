@@ -11,9 +11,15 @@ disable = true
 
 [[sample]]
 name = "sbnd"
-path = "/pnfs/sbnd/persistent/users/mueller/v10_04_07/input*.flat.root"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
 ismc = true
 disable = true
+
+[[sample]]
+name = "sbnd"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input000-reweighted.flat.caf.root"
+ismc = true
+disable = false
 
 [[tree]]
 name = "pid_efficiency"
@@ -40,8 +46,11 @@ branch = [
     {name = "start_dir_y", type = "both_particle"},
     {name = "start_dir_z", type = "both_particle"},
     {name = "end_x", type = "both_particle"},
+    {name = "end_position_x", type = "true_particle"},
     {name = "end_y", type = "both_particle"},
+    {name = "end_position_y", type = "true_particle"},
     {name = "end_z", type = "both_particle"},
+    {name = "end_position_z", type = "true_particle"},
     {name = "end_dir_x", type = "both_particle"},
     {name = "end_dir_y", type = "both_particle"},
     {name = "end_dir_z", type = "both_particle"},

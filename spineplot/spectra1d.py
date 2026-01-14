@@ -144,7 +144,10 @@ class SpineSpectra1D(SpineSpectra):
                 self._plotdata[self._categories[category]] = np.zeros(self._variable._nbins)
                 self._onebincount[self._categories[category]] = 0
             xr = self._variable._range if self._xrange is None else self._xrange
-            h = np.histogram(values, bins=self._variable._nbins, range=xr, weights=weights[category])
+            # Use either uniform bins or customized bins
+            h = np.histogram(values, 
+                bins=self._variable._nbins if self._variable._custom_bins is None else self._variable._custom_bins ,
+                range=xr, weights=weights[category])
             self._onebincount[self._categories[category]] += np.sum(weights[category])
             self._plotdata[self._categories[category]] += h[0]
             self._binedges[self._categories[category]] = h[1]
@@ -231,7 +234,10 @@ class SpineSpectra1D(SpineSpectra):
                 reduce = lambda x : [x[i] for i in histogram_mask]
             
             scale = 1.0 if not normalize else 1.0 / np.sum(reduce(data))
-            ax.hist(reduce(bincenters), weights=[scale*x for x in reduce(data)], bins=self._variable._nbins, range=xr, label=reduce(labels), color=reduce(colors), **style.plot_kwargs)
+            # Use either uniform bins or customized bins
+            ax.hist(reduce(bincenters), weights=[scale*x for x in reduce(data)], 
+                    bins=self._variable._nbins if self._variable._custom_bins is None else self._variable._custom_bins,
+                    range=xr, label=reduce(labels), color=reduce(colors), **style.plot_kwargs)
             if draw_error:
                 systs = [s[draw_error] for s in self._systematics.values() if draw_error in s]
                 cov = np.sum(s.get_covariance(self._variable._key) for s in systs)

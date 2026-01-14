@@ -169,7 +169,11 @@ class SpineSpectra2D(SpineSpectra):
                 self._plotdata[self._categories[category]] = np.zeros((self._variables[0]._nbins, self._variables[1]._nbins))
             xr = self._variables[0]._range if self._xrange is None else self._xrange
             yr = self._variables[1]._range if self._yrange is None else self._yrange
-            h = np.histogram2d(values[0], values[1], bins=(self._variables[0]._nbins, self._variables[1]._nbins), range=(xr, yr), weights=weights[category])
+            # Use either uniform bins or customized bins
+            h = np.histogram2d(values[0], values[1], 
+                bins=[self._variables[0]._nbins if self._variables[0]._custom_bins is None else self._variables[0]._custom_bins,
+                self._variables[1]._nbins if self._variables[1]._custom_bins is None else self._variables[1]._custom_bins], 
+                range=(xr, yr), weights=weights[category])
             self._plotdata[self._categories[category]] += h[0]
             self._binedges[self._categories[category]] = h[1]
 
@@ -177,7 +181,10 @@ class SpineSpectra2D(SpineSpectra):
                 self._plotdata_diagonal[self._categories[category]] = np.zeros(self._variables[0]._nbins)
             diag = np.divide(values[1] - values[0], values[0])
             xr = (-1, 1) if self._xrange is None else self._xrange
-            h = np.histogram(diag, bins=self._variables[0]._nbins, range=xr, weights=weights[category])
+            # Use either uniform bins or customized bins
+            h = np.histogram(diag, 
+                bins=self._variables[0]._nbins if self._variables[0]._custom_bins is None else self._variables[0]._custom_bins, 
+                range=xr, weights=weights[category])
             self._plotdata_diagonal[self._categories[category]] += h[0]
             self._binedges_diagonal[self._categories[category]] = h[1]
 
@@ -232,7 +239,6 @@ class SpineSpectra2D(SpineSpectra):
         None.
         """
         ax.set_title(self._title)
-        
         if show_option == '2d' and self._plotdata is not None:
             values = np.sum([v for v in self._plotdata.values()], axis=0)
             binedges = self._binedges[list(self._plotdata.keys())[0]]
@@ -245,8 +251,18 @@ class SpineSpectra2D(SpineSpectra):
             max_power = max([max_power, 2])
             ln = LogNorm(vmin=1, vmax=10**max_power)
 
-            ax.imshow(values.T, extent=(binedges[0], binedges[-1], binedges[0], binedges[-1]),
-                      aspect='auto', origin='lower', norm=ln if logz else None)
+            if (self._variables[0]._custom_bins is None) and (self._variables[1]._custom_bins is None):
+                # Draw uniform bins histogram using imshow
+                ax.imshow(values.T, extent=(binedges[0], binedges[-1], binedges[0], binedges[-1]),
+                        aspect='auto', origin='lower', norm=ln if logz else None)
+                mesh = None
+            else:
+                # Draw non-uniform bins histogram using pcolormesh
+                mesh = ax.pcolormesh(
+                        self._variables[0]._bin_edges[list(self._plotdata.keys())[0]] if self._variables[0]._custom_bins is None else self._variables[0]._custom_bins, # x bin edges 
+                        self._variables[1]._bin_edges[list(self._plotdata.keys())[0]] if self._variables[1]._custom_bins is None else self._variables[1]._custom_bins, # y bin edges
+                        values.T, shading='auto', norm=ln if logz else None
+                    )
             ax.set_xlabel(self._variables[0]._xlabel if self._xtitle is None else self._xtitle)
             ax.set_ylabel(self._variables[1]._xlabel)
             ax.set_aspect('equal')
@@ -262,7 +278,7 @@ class SpineSpectra2D(SpineSpectra):
             # Draw the colorbar if requested. The color axis may also
             # be logarithmic if requested.
             if draw_colorbar:
-                cbar = plt.colorbar(ax.images[0], ax=ax)
+                cbar = plt.colorbar(ax.images[0] if mesh is None else mesh,  ax=ax)
                 cbar.set_label('Entries')
 
         if show_option == 'projection' and self._plotdata_diagonal is not None:
@@ -270,7 +286,9 @@ class SpineSpectra2D(SpineSpectra):
             colors = [self._colors[label] for label in labels]
             bincenters = [self._binedges_diagonal[l][:-1] + np.diff(self._binedges_diagonal[l]) / 2 for l in labels]
 
-            ax.hist(bincenters, weights=data, bins=self._variables[0]._nbins,
+            # Use either uniform bins or customized bins 
+            ax.hist(bincenters, weights=data, 
+                    bins=self._variables[0]._nbins if self._variables[0]._custom_bins is None else self._variables[0]._custom_bins,
                     range=(-1,1) if self._xrange is None else self._xrange,
                     histtype='barstacked', label=labels, color=colors, stacked=True)
             ax.set_xlabel('(Y-X)/X' if self._xtitle is None else self._xtitle)

@@ -127,6 +127,26 @@ namespace cuts
     REGISTER_CUT_SCOPE(RegistrationScope::True, is_interaction_mode, is_interaction_mode);
 
     /**
+     * @brief Apply a cut on the interaction type.
+     * @details This function applies a cut to select interactions based on
+     * the interaction type. The interaction type is stored by Genie as an
+     * enumerated category.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params the parameters for the cut. In this case, this is a vector
+     * of interaction types to select on.
+     * @return true if the interaction type is one of the specified types.
+     */
+    template<class T>
+    bool is_interaction_type(const T & obj, std::vector<double> params={})
+    {
+        if(params.empty())
+            return true; // No cut applied if no parameters are given.
+        return std::find(params.begin(), params.end(), obj.interaction_type) != params.end();
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::True, is_interaction_type, is_interaction_type);
+
+    /**
      * @brief Apply a fiducial volume cut; the interaction vertex must be
      * reconstructed within the fiducial volume.
      * @details The fiducial volume cut is applied on the reconstructed

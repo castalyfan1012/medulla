@@ -8,6 +8,7 @@ The `medulla` package is designed to be an all-encompassing tool for selection d
 This tutorial will reference the example configuration files located in the `tutorial/examples` directory. These files can be used as a starting point for your own selection development. The examples provided include:
 * `example01_ccqe.toml` - a simple charged-current quasi-elastic (CCQE)-like selection.
 * `example02_muons.toml` - a particle-level selection focusing on muons.
+* `example03_cccoh.toml` - a charged-current coherent pion production (CCCOH) selection.
 
 A slack channel in the SBN workspace (#medulla) is available for questions and discussion. Please do use it!
 
@@ -28,7 +29,7 @@ setup cmake v3_27_4
 
 # Clone the medulla repository:
 git clone https://github.com/justinjmueller/medulla.git medulla
-cd medulla && git checkout v1.0.2
+cd medulla && git checkout v1.0.3
 mkdir build && cd build
 
 # Configure and build medulla:
