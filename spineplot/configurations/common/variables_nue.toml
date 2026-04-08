@@ -4,7 +4,7 @@
 key = 'reco_visible_energy'
 range = [0.0, 3.0]
 nbins = 15
-binning_scheme = 'equal_width'
+binning_scheme = 'equal_population'
 xlabel = 'Reconstructed Visible Energy [GeV/c$^{2}$]'
 
 [variables.reco_leading_electron_ke]

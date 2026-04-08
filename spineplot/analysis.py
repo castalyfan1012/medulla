@@ -8,6 +8,8 @@ from figure import SpineFigure, SimpleFigure
 from spectra1d import SpineSpectra1D
 from spectra2d import SpineSpectra2D
 from efficiency import SpineEfficiency
+from purity import SpinePurity
+from pureff import SpineEfficiencyPurity
 from confusion import ConfusionMatrix
 from roc import ROCCurve
 from ternary import Ternary
@@ -104,7 +106,7 @@ class Analysis:
                 with self._styles[fig['style']] as style:
                     self._figures[fig['name']] = SimpleFigure(fig.get('figsize', style.default_figsize), style, fig.get('title', style.default_title))
                     for x in fig['artists']:
-
+                        print(f"  Parsing artist type: '{x['type']}'")
                         # Check if the artist is restricted to certain
                         # groups. This allows for some additional
                         # amount of control over the plotting.
@@ -158,6 +160,35 @@ class Analysis:
                             art = SpineEfficiency(self._variables[x['variable']], restrict_categories,
                                                   x['cuts'], x.get('title', None), x.get('xrange', None),
                                                   x.get('xtitle', None), show_option, npts)
+                            self._figures[fig['name']].register_spine_artist(art, draw_kwargs=x.get('draw_kwargs', {}))
+                            self._artists.append(art)
+                        
+                        elif x['type'] == 'SpinePurity':
+                            if not all(self._variables[x['variable']]._validity_check.values()):
+                                missing_samples = [k for k, v in self._variables[x['variable']]._validity_check.items() if not v]
+                                raise ConfigException(f"Variable '{x['variable']}' not found in all samples ({' '.join(missing_samples)}).")
+                            
+                            show_option = x.get('draw_kwargs', {}).get('show_option', 'table')
+                            npts = x.get('draw_kwargs', {}).get('npts', 1e6)
+                            
+                            art = SpinePurity(self._variables[x['variable']], restrict_categories,
+                                            x['cuts'], x.get('title', None), x.get('xrange', None),
+                                            x.get('xtitle', None), show_option, npts)
+                            self._figures[fig['name']].register_spine_artist(art, draw_kwargs=x.get('draw_kwargs', {}))
+                            self._artists.append(art)
+                        
+                        elif x['type'] == 'SpineEfficiencyPurity':
+                            if not all(self._variables[x['variable']]._validity_check.values()):
+                                missing_samples = [k for k, v in self._variables[x['variable']]._validity_check.items() if not v]
+                                raise ConfigException(f"Variable '{x['variable']}' not found in all samples ({' '.join(missing_samples)}).")
+
+                            show_option = x.get('draw_kwargs', {}).get('show_option', 'table')
+                            npts = x.get('draw_kwargs', {}).get('npts', 1e6)
+
+                            art = SpineEfficiencyPurity(self._variables[x['variable']], restrict_categories,
+                                x['cuts'], x.get('title', None), x.get('xrange', None),
+                                x.get('xtitle', None), show_option, npts,
+                                all_categories=self._categories)
                             self._figures[fig['name']].register_spine_artist(art, draw_kwargs=x.get('draw_kwargs', {}))
                             self._artists.append(art)
 
@@ -257,10 +288,10 @@ class Analysis:
         if not os.path.exists(self._output_path):
             os.makedirs(self._output_path)
         for figname, figure in self._figures.items():
+            print(f"Figure '{figname}': {len(figure._artists)} artists, {len(figure._axs)} axes (pre-create)")
+            for i, a in enumerate(figure._artists):
+                print(f"  artist[{i}]: {type(a).__name__}")
             figure.create()
-            figure.figure.savefig(f"{self._output_path}/{figname}.png")
-            if close_figs:
-                figure.close()
 
     def run_interactively(self, figure) -> SpineFigure:
         """

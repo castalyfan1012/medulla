@@ -55,7 +55,7 @@ name = 'signal_sbnd'
 style_sheet = "/exp/sbnd/data/users/castalyf/nue_sel/medulla/spineplot/styles/muon2024.mplstyle"
 markers = ['o', '^', 's', 'P', 'D']
 default_figsize = [6.4,4.8]
-title = '$\bf{SBND}$ $1\mu Np$ CC0$\pi$'
+title = '$\bf{SBND}$ $\nu_e$ CC Inclusive'
 mark_pot = true
 mark_preliminary = '$\bf{SBND}$ Simulation Work-in-Progress'
 plot_kwargs = {'histtype' = 'barstacked', 'stacked' = true}
